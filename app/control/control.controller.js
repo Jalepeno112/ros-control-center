@@ -30,7 +30,6 @@ class ControlController {
   getDomains() {
     const allData = this.data.topics.concat(this.data.services, this.data.nodes);
     const domains = this.Domains.getDomains(allData);
-
     if (!this.activeDomain) {
       this.setActiveDomain(domains[0]);
     }

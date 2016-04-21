@@ -61,9 +61,8 @@ var ControlController = function () {
     value: function getDomains() {
       var allData = this.data.topics.concat(this.data.services, this.data.nodes);
       var domains = this.Domains.getDomains(allData);
-
       if (!this.activeDomain) {
-        this.setActiveDomain(domains[0]);
+        this.setActiveDomain('Dashboard');
       }
       return domains;
     }
@@ -120,6 +119,8 @@ var ControlController = function () {
     key: 'onConnected',
     value: function onConnected() {
       var _this3 = this;
+
+      console.log("Connected!");
 
       // wait a moment until ROS is loaded and initialized
       this.$timeout(function () {
@@ -192,7 +193,7 @@ var ControlController = function () {
       ros.getTopics(function (topics) {
         angular.forEach(topics, function (name) {
           _this6.data.topics.push({ name: name });
-
+          console.log("Getting topic: ", name);
           ros.getTopicType(name, function (type) {
             _.findWhere(_this6.data.topics, { name: name }).type = type;
           });
@@ -288,6 +289,8 @@ var DomainsService = function () {
       var result = [];
       angular.forEach(array, function (entry) {
         var nameArray = entry.name.split('/');
+        //console.log("DOMAIN ENTRY: ", entry);
+        //console.log("NAME ARRAY: ", nameArray);
         if (nameArray.length > 1 && nameArray[1] === domainName && _this.filterAdvanced(entry.name, advanced)) {
           entry.abbr = nameArray.slice(2).join(' ');
           result.push(entry);
@@ -433,7 +436,6 @@ function serviceDirective() {
           serviceType: this.service.type
         });
         var request = new ROSLIB.ServiceRequest(data);
-
         service.callService(request, function (result) {
           $timeout(function () {
             _this2.result = result;
@@ -585,7 +587,9 @@ function topicDirective() {
     template: '<ng-include src=\"vm.fileName\"></ng-include>',
     controllerAs: 'vm',
     controller: function controller($scope, $timeout, $http, Settings, Quaternions) {
+
       var _this = this;
+      console.log("Creating new topic for name: ", $scope.topic.name, "; type: ", $scope.topic.type);
 
       var roslibTopic = new ROSLIB.Topic({
         ros: ros,
@@ -608,7 +612,6 @@ function topicDirective() {
           return;
         }
         var fileName = path + $scope.topic.type + '.html';
-
         _this.topic = $scope.topic;
         $http.get(fileName).then(function (result) {
           if (result.data) {
@@ -619,10 +622,12 @@ function topicDirective() {
 
       function toggleSubscription(data) {
         var _this2 = this;
-
         if (!data) {
+          console.log("ROSLIBTOPIC: ", roslibTopic);
           roslibTopic.subscribe(function (message) {
             $timeout(function () {
+              // get the incoming message for the given topic
+              console.log(message);
               _this2.message = message;
             });
           });
@@ -642,3 +647,102 @@ function topicDirective() {
 }
 
 angular.module('roscc').directive('ccTopic', topicDirective);
+
+
+function dashboardDirective() {
+  return {
+    scope: { topic: '=' },
+    template: '<ng-include src=\"vm.fileName\"></ng-include>',
+    controllerAs: 'vm',
+    controller: function controller($scope, $timeout, $http, Settings, Quaternions) {
+      var _this = this;
+
+      var topics = [
+        {"name": "/VehicleState", "type":"rsl_rover_msgs/vehicle_state"},
+
+      ];
+      var roslibTopics = {}
+
+      this.messages = {};
+
+      for (var topic in topics) {
+        roslibTopics[topics[topic].name] = new ROSLIB.Topic({
+          ros: ros,
+          name: topics[topic].name,
+          messageType: topics[topic].type
+        });
+        var name_splice = topics[topic].name.split("/");
+        this.messages[name_splice[1]] = {};
+
+        var type_splice = topics[topic].type.split("/");
+        this.messages[name_splice[1]][type_splice[0]] = {};
+        this.messages[name_splice[1]][type_splice[0]][type_splice[1]] ={};
+        console.log(name_splice, type_splice);
+
+      }
+      console.log("MESSAGES: ", this.messages);
+      console.log(roslibTopics);
+      var path = 'app/topics/';
+
+      this.topic = $scope.topic;
+      this.toggleSubscription = toggleSubscription;
+      this.isSubscribing = false;
+      this.setting = Settings.get();
+      this.Quaternions = Quaternions;
+      this.fileName = path + 'default.html';
+
+      // Check if file exists
+      $scope.$watch('topic.type', function () {
+        var fileName = path + "dashboard/dashboard2.html";
+        _this.topic = $scope.topic;
+        $http.get(fileName).then(function (result) {
+          if (result.data) {
+            _this.fileName = fileName;
+          }
+        });
+      });
+
+      function toggleSubscription(data) {
+        var _this2 = this;
+        for (topic in roslibTopics) {
+          var t = roslibTopics[topic];
+          if (!data) {
+            t.subscribe(function (message) {
+              $timeout(function () {
+                var name_splice = t.name.split("/");
+                var type_splice = t.messageType.split("/");
+                console.log(type_splice)
+                // get the incoming message for the given topic
+                _this2.messages[name_splice[1]][type_splice[0]][type_splice[1]] = message;
+                console.log(name_splice[1], type_splice[0], type_splice[1]);
+              });
+            });
+            console.log(t);
+
+          } else {
+            t.unsubscribe();
+          }
+        } 
+        this.isSubscribing = !data;
+      }
+
+      /*function publishMessage(input, isJSON) {
+        var data = isJSON ? angular.fromJSON(input) : input;
+        var message = new ROSLIB.Message(data);
+        roslibTopic.publish(message);
+      }*/
+    }
+  };
+}
+angular.module('roscc').directive('dashTopic', dashboardDirective);
+
+
+function angularLidarViz(){
+  return {
+    controller: function controller($scope, $timeout, $http, Settings, Quaternions) {
+      $scope.init = lidarViz;
+    }
+
+  }
+}
+angular.module('roscc').directive('lidarViz', angularLidarViz);

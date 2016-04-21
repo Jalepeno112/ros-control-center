@@ -13,7 +13,7 @@
       <div class="col-xs-12">
         <button class="btn btn-default pull-right" type="button" ng-disabled="vm.isSubscribing" style="margin-left: 10px;" ng-click="vm.publishMessage(vm.message)">Publish</button>
         <div class="input-group">
-          <input type="number" class="form-control" ng-model="vm.message.temperature" ng-readonly="vm.isSubscribing">
+          <input type="number" class="form-control" ng-model="vm.message.temperature" ng-readonly=true>
           <span class="input-group-addon">° C</span>
         </div>
       </div>

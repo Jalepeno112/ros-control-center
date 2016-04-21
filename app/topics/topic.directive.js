@@ -55,5 +55,4 @@ function topicDirective() {
     },
   };
 }
-
 angular.module('roscc').directive('ccTopic', topicDirective);

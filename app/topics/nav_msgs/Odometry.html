@@ -1,0 +1,131 @@
+<div class="panel panel-default" ng-class="{'panel-success': vm.toggle}">
+    <div class="panel-heading clearfix">
+        <button id="vehicle_state_sub" class="btn btn-default btn-sm pull-right" ng-click="vm.toggleSubscription(!vm.toggle)" ng-model="vm.toggle" uib-btn-checkbox>{{ vm.toggle ? 'Unsubscribe' : 'Subscribe' }}</button>
+        <h3 class="panel-title">
+            {{ vm.topic.abbr }}
+            <small style="font-size: 12px;">({{ vm.topic.type }})</small>
+        </h3>
+    </div>
+    <div class="alert alert-danger" ng-show="vm.message.estop != null && vm.message.estop != false">
+        ESTOP Occured! Code: <strong>{{vm.message.estop_code}}</strong>
+    </div>
+
+    <div class="panel-body">
+        <div class ="row">
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <label>Timestamp</label>
+                    {{ vm.message.header.stamp.secs * 1000 | date:'yyyy-MM-dd HH:mm:ss Z'}}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <form class="form-horizontal form-margin">
+                    <h4>Pose</h4>
+                    <div class="form-group">
+                        <div class="col-sm-4">
+                            <label>Pos X</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" ng-model="vm.message.pose.pose.position.x" ng-readonly="vm.isSubscribing">
+                                <span class="input-group-addon"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <label>Pos Y</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" ng-model="vm.message.pose.pose.position.y" ng-readonly="vm.isSubscribing">
+                                <span class="input-group-addon"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <label>Pos Z</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" ng-model="vm.message.pose.pose.position.z" ng-readonly="vm.isSubscribing">
+                                <span class="input-group-addon"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-3">
+                            <label>Ortn X</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" ng-model="vm.message.pose.pose.orientation.x" ng-readonly="vm.isSubscribing">
+                                <span class="input-group-addon"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <label>Ortn Y</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" ng-model="vm.message.pose.pose.orientation.y" ng-readonly="vm.isSubscribing">
+                                <span class="input-group-addon"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <label>Ortn Z</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" ng-model="vm.message.pose.pose.orientation.z" ng-readonly="vm.isSubscribing">
+                                <span class="input-group-addon"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <label>Ortn W</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" ng-model="vm.message.pose.pose.orientation.z" ng-readonly="vm.isSubscribing">
+                                <span class="input-group-addon"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <h4>Twist</h4>
+                    <div class="form-group">
+                        <div class="col-sm-4">
+                            <label>Angular X</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" ng-model="vm.message.twist.twist.angular.x" ng-readonly="vm.isSubscribing">
+                                <span class="input-group-addon"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <label>Angular Y</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" ng-model="vm.message.twist.twist.angular.y" ng-readonly="vm.isSubscribing">
+                                <span class="input-group-addon"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <label>Angular Z</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" ng-model="vm.message.twist.twist.angular.z" ng-readonly="vm.isSubscribing">
+                                <span class="input-group-addon"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-4">
+                            <label>Linear X</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" ng-model="vm.message.twist.twist.angular.x" ng-readonly="vm.isSubscribing">
+                                <span class="input-group-addon"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <label>Linear Y</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" ng-model="vm.message.twist.twist.angular.y" ng-readonly="vm.isSubscribing">
+                                <span class="input-group-addon"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <label>Linear Z</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" ng-model="vm.message.twist.twist.angular.z" ng-readonly="vm.isSubscribing">
+                                <span class="input-group-addon"></span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

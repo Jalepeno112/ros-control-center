@@ -16,4 +16,4 @@ function ROSCCConfig($routeProvider, localStorageServiceProvider) {
     .setPrefix('roscc');
 }
 
-angular.module('roscc', ['ngRoute', 'ui.bootstrap', 'LocalStorageModule']).config(ROSCCConfig);
+angular.module('roscc', ['ngRoute', 'ui.bootstrap', 'LocalStorageModule', "highcharts-ng"]).config(ROSCCConfig);
