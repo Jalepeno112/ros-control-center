@@ -85,9 +85,12 @@ var ctrl = angular.module('roscc').controller("gasChart", function ($scope, $tim
             }, 0);
         },    
         useHighStock: true
-    }
-    $scope.init = function(topic_name, chart_height, chart_title) {
-        $scope.topicName = topic_name;
+    };
+    $scope.init = function(gas_name, chart_height, chart_title) {
+        /**
+         * topic_names is a list of all the different gas sensor topics
+         */
+        $scope.gas_name = gas_name;
         $scope.chart_height = chart_height;
         $scope.chart_title = chart_title;
         if (chart_height != undefined) {
@@ -96,8 +99,9 @@ var ctrl = angular.module('roscc').controller("gasChart", function ($scope, $tim
         if ($scope.chart_title) {
             $scope.gasChart.options.title.text = chart_title;
         }
+        $scope.topicNames = $scope.vm.gasTopics[gas_name];
     };
-     function deref(obj, s) {
+    function deref(obj, s) {
       var i = 0;
       if (!s) {
         return undefined;
@@ -110,19 +114,23 @@ var ctrl = angular.module('roscc').controller("gasChart", function ($scope, $tim
             i = i + 1;
         }
     return obj;
-    }
-    function getTopicName() {
-        return $scope.topicName;
-    }
+    };
+    function getMessageName(topic) {
+        var name_splice = topic.name.split("/");
+        var type_splice = topic.type.split("/");
+        return (name_splice[1] +"."+type_splice[0]+"."+type_splice[1]+".");
+    };
 
-    // watch the message and update the chart whenever the value updates
-    var topicName = $scope.topicName;
     $scope.$watch(function($scope) {
-        var val = deref($scope, $scope.topicName);
-        return val;
+        // watch the message and update the chart whenever the value update
+        var val;
+        $.each($scope.topicNames, function(e) {
+            var val = val + deref($scope, getMessageName($scope.topicNames[e]));
+        });
+        return val/$scope.topicNames.length;
     },function(val){
         if(val){
-            $scope.speedChartConfig.series[0].data[0] = Math.abs(val);
+            $scope.gasChart.series[0].data[0] = Math.abs(val);
         }
     }, false);
 });

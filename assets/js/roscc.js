@@ -662,33 +662,43 @@ function dashboardDirective() {
     controller: function controller($scope, $timeout, $http, Settings, Quaternions) {
       var _this = this;
 
-      var topics = [
-        {"name": "/VehicleState", "type":"rsl_rover_msgs/vehicle_state", "throttle":200},
+      // general topics that we want to visualize
+      this.topics = [
+        {"name": "/Gas", "type":"gas/gas", "throttle":200},
+        {"name": "/VehicleState", "type":"rsl_rover_msgs/vehicle_state", "throttle":100},
 
       ];
-      var roslibTopics = {}
-
+     
+      // the gas sensor topics are special, so we need to deal with them seperately
+      // we want to monitor them as a group and aggregate their values
+      // but we only want to use certain sensors for certain gases
+      this.gasTopics = {
+        c0: [this.topics[0], this.topics[1]],
+        c02: [this.topics[0], this.topics[1]],
+        propane: [this.topics[0], this.topics[1]],
+        methane: [this.topics[0], this.topics[1]]
+      }
+      this.roslibTopics = {}
       this.messages = {};
 
-      for (var topic in topics) {
-        roslibTopics[topics[topic].name] = new ROSLIB.Topic({
+      // build a ROSLIB Topic for each topic in the list
+      for (var topic in this.topics) {
+        this.roslibTopics[_this.topics[topic].name] = new ROSLIB.Topic({
           ros: ros,
-          name: topics[topic].name,
-          messageType: topics[topic].type,
-          throttle: topics[topic].throttle
+          name: _this.topics[topic].name,
+          messageType: _this.topics[topic].type,
+          throttle: _this.topics[topic].throttle
         });
-        var name_splice = topics[topic].name.split("/");
+        var name_splice = this.topics[topic].name.split("/");
         this.messages[name_splice[1]] = {};
 
-        var type_splice = topics[topic].type.split("/");
+        var type_splice = this.topics[topic].type.split("/");
         this.messages[name_splice[1]][type_splice[0]] = {};
         this.messages[name_splice[1]][type_splice[0]][type_splice[1]] ={};
-
       }
       var path = 'app/topics/';
 
       this.topic = $scope.topic;
-      //this.toggleSubscription = toggleSubscription;
       this.isSubscribing = false;
       this.setting = Settings.get();
       this.Quaternions = Quaternions;
@@ -705,8 +715,8 @@ function dashboardDirective() {
         });
       });
 
-      for (topic in roslibTopics) {
-        var t = roslibTopics[topic];
+      for (topic in this.roslibTopics) {
+        var t = this.roslibTopics[topic];
 
         console.log("Subscribing to ", t.name);
 
@@ -716,6 +726,7 @@ function dashboardDirective() {
             var type_splice = t.messageType.split("/");
             // get the incoming message for the given topic
             _this.messages[name_splice[1]][type_splice[0]][type_splice[1]] = message;
+            console.log(message.header.stamp.secs * 1000 - (new Date() / 1000));
           }, 1000);
         });
       }

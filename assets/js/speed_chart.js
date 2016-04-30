@@ -117,7 +117,7 @@ var ctrl = angular.module('roscc').controller("speedChartController", function (
         }
     }
 
-    if ($scope.chart_height ){
+    if ($scope.chart_height){
         $scope.speedChartConfig.options.chart.height = $scope.chart_height;
     }
 

@@ -1,12 +1,12 @@
 <div class="container-fluid">
   <!-- No connection alert -->
-  <div class="alert alert-info col-sm-6 col-sm-offset-3" role="alert" ng-if="!vm.isConnected">
+  <div class="alert alert-info col-sm-6 col-sm-offset-3" role="alert" ng-if="vm.isConnected">
     <p class="lead"><i class="glyphicon glyphicon-warning-sign"></i> Whoops...</p>
     Is <b>not connected</b> to a robot running rosbridge_suite at {{ vm.setting.address }}:{{ vm.setting.port }}. <br />
     You can change the URL in the <i>Settings</i> tab.
   </div>
 
-  <div class="row" ng-if="vm.isConnected">
+  <div class="row" ng-if="!vm.isConnected">
   <div class="row">
     <!-- side navigation bar and main content-->
     <div ng-class="{'col-xs-12 col-sm-12':(vm.activeDomain == 'Dashboard'), 'col-xs-8 col-sm-8': (vm.activeDomain != 'Dashboard')}">
