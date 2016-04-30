@@ -1,13 +1,16 @@
 'use strict';
 angular.module("roscc").requires.push('highcharts-ng');
 
-var ctrl = angular.module('roscc').controller("carbonDioxideChart", function ($scope){
-    console.log("Scope: ", $scope);
-      $scope.carbonDioxideConfig = {
+var ctrl = angular.module('roscc').controller("gasChart", function ($scope, $timeout){
+      $scope.gasChart = {
         options: {
             "chart": {
                 "type": "gauge",
                 "height":120,
+
+            },
+            exporting: { 
+                enabled: false 
             },
             "pane": {
                 "center": [
@@ -76,7 +79,51 @@ var ctrl = angular.module('roscc').controller("carbonDioxideChart", function ($s
                 "margin": 0
             }
         }, //end options
+        func: function(chart) {
+            $timeout(function() {
+                chart.reflow();
+            }, 0);
+        },    
         useHighStock: true
     }
+    $scope.init = function(topic_name, chart_height, chart_title) {
+        $scope.topicName = topic_name;
+        $scope.chart_height = chart_height;
+        $scope.chart_title = chart_title;
+        if (chart_height != undefined) {
+            $scope.gasChart.options.chart.height = chart_height;
+        }
+        if ($scope.chart_title) {
+            $scope.gasChart.options.title.text = chart_title;
+        }
+    };
+     function deref(obj, s) {
+      var i = 0;
+      if (!s) {
+        return undefined;
+      }
+      s = s.split('.');
+      while (i < s.length) {
+            obj = obj[s[i]];
+            if (obj === undefined)
+                return obj;
+            i = i + 1;
+        }
+    return obj;
+    }
+    function getTopicName() {
+        return $scope.topicName;
+    }
+
+    // watch the message and update the chart whenever the value updates
+    var topicName = $scope.topicName;
+    $scope.$watch(function($scope) {
+        var val = deref($scope, $scope.topicName);
+        return val;
+    },function(val){
+        if(val){
+            $scope.speedChartConfig.series[0].data[0] = Math.abs(val);
+        }
+    }, false);
 });
 console.log("Loaded controller: ", ctrl);

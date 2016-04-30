@@ -62,6 +62,7 @@ var ControlController = function () {
       var allData = this.data.topics.concat(this.data.services, this.data.nodes);
       var domains = this.Domains.getDomains(allData);
       if (!this.activeDomain) {
+        // if no other domains are found, use Dashboard as the default
         this.setActiveDomain('Dashboard');
       }
       return domains;
@@ -287,15 +288,19 @@ var DomainsService = function () {
       var _this = this;
 
       var result = [];
+      console.log("GETTING DATA FOR DOMAIN");
+      console.time("getDataForDomain");
+      console.log("Domain: ", domainName, "; Array: ", array);
+
       angular.forEach(array, function (entry) {
         var nameArray = entry.name.split('/');
-        //console.log("DOMAIN ENTRY: ", entry);
-        //console.log("NAME ARRAY: ", nameArray);
         if (nameArray.length > 1 && nameArray[1] === domainName && _this.filterAdvanced(entry.name, advanced)) {
           entry.abbr = nameArray.slice(2).join(' ');
           result.push(entry);
         }
       });
+      console.timeEnd("getDataForDomain");
+      console.log("DataForDomain: ", result);
       return result;
     }
   }]);
@@ -627,7 +632,7 @@ function topicDirective() {
           roslibTopic.subscribe(function (message) {
             $timeout(function () {
               // get the incoming message for the given topic
-              console.log(message);
+//              console.log(message);
               _this2.message = message;
             });
           });
@@ -658,7 +663,7 @@ function dashboardDirective() {
       var _this = this;
 
       var topics = [
-        {"name": "/VehicleState", "type":"rsl_rover_msgs/vehicle_state"},
+        {"name": "/VehicleState", "type":"rsl_rover_msgs/vehicle_state", "throttle":200},
 
       ];
       var roslibTopics = {}
@@ -669,7 +674,8 @@ function dashboardDirective() {
         roslibTopics[topics[topic].name] = new ROSLIB.Topic({
           ros: ros,
           name: topics[topic].name,
-          messageType: topics[topic].type
+          messageType: topics[topic].type,
+          throttle: topics[topic].throttle
         });
         var name_splice = topics[topic].name.split("/");
         this.messages[name_splice[1]] = {};
@@ -677,15 +683,12 @@ function dashboardDirective() {
         var type_splice = topics[topic].type.split("/");
         this.messages[name_splice[1]][type_splice[0]] = {};
         this.messages[name_splice[1]][type_splice[0]][type_splice[1]] ={};
-        console.log(name_splice, type_splice);
 
       }
-      console.log("MESSAGES: ", this.messages);
-      console.log(roslibTopics);
       var path = 'app/topics/';
 
       this.topic = $scope.topic;
-      this.toggleSubscription = toggleSubscription;
+      //this.toggleSubscription = toggleSubscription;
       this.isSubscribing = false;
       this.setting = Settings.get();
       this.Quaternions = Quaternions;
@@ -702,35 +705,20 @@ function dashboardDirective() {
         });
       });
 
-      function toggleSubscription(data) {
-        var _this2 = this;
-        for (topic in roslibTopics) {
-          var t = roslibTopics[topic];
-          if (!data) {
-            t.subscribe(function (message) {
-              $timeout(function () {
-                var name_splice = t.name.split("/");
-                var type_splice = t.messageType.split("/");
-                console.log(type_splice)
-                // get the incoming message for the given topic
-                _this2.messages[name_splice[1]][type_splice[0]][type_splice[1]] = message;
-                console.log(name_splice[1], type_splice[0], type_splice[1]);
-              });
-            });
-            console.log(t);
+      for (topic in roslibTopics) {
+        var t = roslibTopics[topic];
 
-          } else {
-            t.unsubscribe();
-          }
-        } 
-        this.isSubscribing = !data;
+        console.log("Subscribing to ", t.name);
+
+        t.subscribe(function(message) {
+          $timeout(function () {
+            var name_splice = t.name.split("/");
+            var type_splice = t.messageType.split("/");
+            // get the incoming message for the given topic
+            _this.messages[name_splice[1]][type_splice[0]][type_splice[1]] = message;
+          }, 1000);
+        });
       }
-
-      /*function publishMessage(input, isJSON) {
-        var data = isJSON ? angular.fromJSON(input) : input;
-        var message = new ROSLIB.Message(data);
-        roslibTopic.publish(message);
-      }*/
     }
   };
 }
@@ -740,9 +728,83 @@ angular.module('roscc').directive('dashTopic', dashboardDirective);
 function angularLidarViz(){
   return {
     controller: function controller($scope, $timeout, $http, Settings, Quaternions) {
-      $scope.init = lidarViz;
-    }
+      $scope.init = function(height, divID) {
+        /**
+        * Setup all visualization elements when the page is loaded.
+        */
+        // Connect to ROS.
+        this.settings = Settings.get();
+        var _this = this;
+        var ros = new ROSLIB.Ros({
+          url : "ws://"+_this.settings.address + ":"+_this.settings.port
+        });
 
+        // Create the main viewer.
+        var width = $("#lidar_viz").width();
+        var viewer = new ROS3D.Viewer({
+          divID : divID,
+          width : width,
+          height : height,
+          antialias : false
+        });
+
+        // Add a grid.
+        viewer.addObject(
+          new ROS3D.Grid({
+            cellSize: 0.5,
+            num_cells: 100
+          })
+        );
+        console.log(viewer);
+
+        // Setup a client to listen to TFs.
+        var tf_base = new ROSLIB.TFClient({
+          ros : ros,
+          angularThres : 0.01,
+          transThres : 0.01,
+          rate : 5.0,
+          fixedFrame : '/base_link'
+        });
+
+        var tf_cloud = new ROSLIB.TFClient({
+          ros : ros,
+          angularThres : 0.01,
+          transThres : 0.01,
+          rate : 5.0,
+          fixedFrame : '/map'
+        });
+
+
+
+        var urdfScene = new ROS3D.SceneNode({
+           tfClient : tf_cloud,
+           frameID  : '/map',
+        });
+
+        viewer.scene.add(urdfScene);
+
+
+        var pointcloud = new ROS3D.PointCloud2({
+          ros: ros,
+          topic: "/ass_cloud",
+          tfClient: tf_base,
+          rootObject: urdfScene,
+          size: 0.5,
+          max_pts: 75000
+        });
+
+
+        // Setup the URDF client.
+        var urdfClient = new ROS3D.UrdfClient({
+          ros : ros,
+          tfClient : tf_base,
+          path : 'http://localhost:8000/urdf/',
+          rootObject : urdfScene,
+          loader : ROS3D.COLLADA_LOADER_2
+         });
+
+      };
+    }
   }
 }
 angular.module('roscc').directive('lidarViz', angularLidarViz);

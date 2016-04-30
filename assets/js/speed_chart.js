@@ -1,7 +1,7 @@
 'use strict';
 angular.module("roscc").requires.push('highcharts-ng');
 
-var ctrl = angular.module('roscc').controller("speedChartController", function ($scope){
+var ctrl = angular.module('roscc').controller("speedChartController", function ($scope, $timeout, $parse){
     console.log("Scope: ", $scope);
       $scope.speedChartConfig = {
         options: {
@@ -85,7 +85,10 @@ var ctrl = angular.module('roscc').controller("speedChartController", function (
             name: 'speed',
             data: [0],
             tooltip: {
-                valueSuffix: ' m/s'
+                valueSuffix: ' m/s',
+            },
+            dataLabels: {
+                format: "{y:.1f}"
             }
         }],
         plotOptions: {
@@ -93,9 +96,18 @@ var ctrl = angular.module('roscc').controller("speedChartController", function (
                 marker: {
                     enabled: false
                 }
+            },
+            dataLabels: {
+                format: "{y:.2f}"
             }
+        },
+        func: function(chart) {
+            $timeout(function() {
+                chart.reflow();
+            }, 10);
         },    
-        useHighStock: true
+        useHighStock: true,
+
     };
 
     $scope.init = function(topic_name, chart_height) {
@@ -107,7 +119,6 @@ var ctrl = angular.module('roscc').controller("speedChartController", function (
 
     if ($scope.chart_height ){
         $scope.speedChartConfig.options.chart.height = $scope.chart_height;
-        console.log($scope.speedChartConfig.options);
     }
 
     function deref(obj, s) {
@@ -132,8 +143,18 @@ var ctrl = angular.module('roscc').controller("speedChartController", function (
     var topicName = $scope.topicName;
     $scope.$watch(function($scope) {
         var val = deref($scope, $scope.topicName);
-        if (val) {
+        return val;
+    },function(val){
+        if(val){
             $scope.speedChartConfig.series[0].data[0] = Math.abs(val);
         }
-    });
+    }, false);
+    /*var _scope = $scope;
+    $scope.$watch(model, function(newValue, oldValue){
+        console.log(newValue, oldValue, model);
+        if (newValue){
+            console.log('Updating value!')
+            _scope.speedChartConfig.series[0].data[0] = Math.abs(newValue);
+        }
+    })*/
 });

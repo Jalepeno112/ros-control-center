@@ -1,14 +1,15 @@
 <div class="container-fluid">
   <!-- No connection alert -->
-  <div class="alert alert-info col-sm-6 col-sm-offset-3" role="alert" ng-if="vm.isConnected">
+  <div class="alert alert-info col-sm-6 col-sm-offset-3" role="alert" ng-if="!vm.isConnected">
     <p class="lead"><i class="glyphicon glyphicon-warning-sign"></i> Whoops...</p>
     Is <b>not connected</b> to a robot running rosbridge_suite at {{ vm.setting.address }}:{{ vm.setting.port }}. <br />
     You can change the URL in the <i>Settings</i> tab.
   </div>
 
-  <div class="row" ng-if="!vm.isConnected">
+  <div class="row" ng-if="vm.isConnected">
   <div class="row">
-    <div class="col-xs-12 col-sm-12">
+    <!-- side navigation bar and main content-->
+    <div ng-class="{'col-xs-12 col-sm-12':(vm.activeDomain == 'Dashboard'), 'col-xs-8 col-sm-8': (vm.activeDomain != 'Dashboard')}">
       <div class="row">
         <!-- Sidebar menu -->
         <div class="col-sm-2">
@@ -30,31 +31,30 @@
           <cc-parameter ng-repeat="parameter in vm.getGlobalParameters()" ng-show="vm.Domains.filterAdvanced(parameter.name, vm.setting.advanced)" parameter="parameter"></cc-parameter>
         </div>
 
-        <div class="col-sm-10">
-
-        <!-- DASHBOARD DIV -->
-         <div ng-show="vm.activeDomain == 'Dashboard'">
+        <!-- Main content -->
+        <div class ='col-xs-10 col-sm-10'>
+          <div ng-show="vm.activeDomain == 'Dashboard'">
             <dash-topic dash="dash" topics="topics"></dash-topic>
           </div>
-          <!-- DASHBOARD -->
-
-          <div ng-repeat="domain in vm.getDomains()" ng-show="vm.activeDomain == domain">
+          <div ng-repeat="domain in vm.getDomains() track by $index" ng-show="vm.activeDomain == domain">
             <p class="lead" style="font-size: 28px;">{{ domain }}</p>
 
             <!-- Topics -->
-            <cc-topic topic="topic" ng-repeat="topic in vm.Domains.getDataForDomain(vm.data.topics, domain, vm.setting.advanced)"></cc-topic>
+            <cc-topic topic="topic" ng-repeat="topic in ::vm.Domains.getDataForDomain(vm.data.topics, domain, vm.setting.advanced) track by topic.topic"></cc-topic>
 
             <!-- Services -->
-            <cc-service service="service" ng-repeat="service in vm.Domains.getDataForDomain(vm.data.services, domain, vm.setting.advanced)"></cc-service>
+            <!--<cc-service service="service" ng-repeat="service in vm.Domains.getDataForDomain(vm.data.services, domain, vm.setting.advanced)"></cc-service>-->
 
             <!-- Parameters -->
-            <cc-parameter parameter="parameter" ng-repeat="parameter in vm.Domains.getDataForDomain(vm.data.parameters, domain, vm.setting.advanced)"></cc-parameter>
+            <!--<cc-parameter parameter="parameter" ng-repeat="parameter in vm.Domains.getDataForDomain(vm.data.parameters, domain, vm.setting.advanced)"></cc-parameter>-->
           </div>
         </div>
-      </div>
+      </div> <!-- end row-->
     </div>
+    <!-- end side naviagation and main content-->
 
-    <div class="col-sm-3 sidebar hidden-xs" ng-if="vm.activeDomain != 'Dashboard'">
+    <!-- rosout sidebar-->
+    <div class="col-sm-4 sidebar hidden-xs" ng-if="vm.activeDomain != 'Dashboard'">
       <!-- Console Log -->
       <div class="console">
         <table class="table">
@@ -92,5 +92,6 @@
         </div>
       </div>
     </div>
+    <!-- end rosout sidebar-->
   </div>
 </div>
