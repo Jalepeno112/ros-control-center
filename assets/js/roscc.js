@@ -599,7 +599,8 @@ function topicDirective() {
       var roslibTopic = new ROSLIB.Topic({
         ros: ros,
         name: $scope.topic.name,
-        messageType: $scope.topic.type
+        messageType: $scope.topic.type,
+        queue_size: 1
       });
       var path = 'app/topics/';
 
@@ -654,6 +655,26 @@ function topicDirective() {
 angular.module('roscc').directive('ccTopic', topicDirective);
 
 
+/**
+ * Controller for the main dashboard
+ *
+ * This controller is different than the default topic controller provided by the Ros Control Center
+ * Here, we want to mix together data from multiple topics in one display.
+ * In order to do this we need to subscribe to each topic and make their data available in a way that they don't overwrite eachother
+ *
+ * To make the data available, we create a dicitonary called *message*.
+ * We then break each topics name and type into keys that are used to create a nested dicitonary structures.
+ * For example, the topic that contains the vehicle state information is:
+ *    - name:  /VehicleState
+ *    - type:  /rsl_rover_msgs/vehicle_state
+ *
+ * The data for that topic will then live at:
+ *    - messages.VehicleState.rsl_rover_msgs.vehicle_state
+ *
+ * The data itself comes through as a JSON object which is then converted into a dicitonary
+ * So to get the wheel_speed of the rover we access:
+ *    - messages.VehicleState.rsl_rover_msgs.vehicle_state.wheel_speed
+ */
 function dashboardDirective() {
   return {
     scope: { topic: '=' },
@@ -662,40 +683,59 @@ function dashboardDirective() {
     controller: function controller($scope, $timeout, $http, Settings, Quaternions) {
       var _this = this;
 
+      // given a topic name and type, we create a nested dicitonary structure
+      // each string before or after a '/' becomes a new key to an empty dictionary
+      this.MessageToDict = function(name, type) {
+        console.log(name, type);
+        var messages = {};
+        var sub_message = messages;
+        var name_splice = name.split("/");
+        for (var i = 1; i < name_splice.length; i++) {
+          sub_message[name_splice[i]] = {};
+          sub_message = sub_message[name_splice[i]];
+        }
+        var type_splice = type.split("/");
+        for (var i = 0; i < type_splice.length; i++) {
+          sub_message[type_splice[i]] = {};
+          sub_message = sub_message[type_splice[i]];
+        }
+        return messages;
+      }
+
       // general topics that we want to visualize
       this.topics = [
-        {"name": "/Gas", "type":"gas/gas", "throttle":200},
-        {"name": "/VehicleState", "type":"rsl_rover_msgs/vehicle_state", "throttle":100},
-
+        {"name": "/EnvData/curly", "type":"rsl_rover_msgs/env_data", "throttle":200},     // sensor box 1
+        {"name": "/EnvData/moe", "type":"rsl_rover_msgs/env_data", "throttle":200},       // sensor box 2
+        {"name": "/EnvData/larry", "type":"rsl_rover_msgs/env_data", "throttle":200},     // sensor box 3
+        {"name": "/VehicleState", "type":"rsl_rover_msgs/vehicle_state", "throttle":100}, // vehicle state information
       ];
      
       // the gas sensor topics are special, so we need to deal with them seperately
       // we want to monitor them as a group and aggregate their values
       // but we only want to use certain sensors for certain gases
       this.gasTopics = {
-        c0: [this.topics[0], this.topics[1]],
-        c02: [this.topics[0], this.topics[1]],
-        propane: [this.topics[0], this.topics[1]],
-        methane: [this.topics[0], this.topics[1]]
+        c0:       {topics:[this.topics[0], this.topics[1], this.topics[2]], sensors:["M1", "M2", "M3"]},
+        c02:      {topics:[this.topics[0], this.topics[1], this.topics[2]], sensors:["M1", "M2", "M3"]},
+        propane:  {topics:[this.topics[0], this.topics[1], this.topics[2]], sensors:["M1", "M2", "M3"]},
+        methane:  {topics:[this.topics[0], this.topics[1], this.topics[2]], sensors:["M1", "M2", "M3"]}
       }
       this.roslibTopics = {}
       this.messages = {};
 
       // build a ROSLIB Topic for each topic in the list
+      // and construct the holder for all the different message types
       for (var topic in this.topics) {
         this.roslibTopics[_this.topics[topic].name] = new ROSLIB.Topic({
           ros: ros,
           name: _this.topics[topic].name,
           messageType: _this.topics[topic].type,
-          throttle: _this.topics[topic].throttle
+          throttle: _this.topics[topic].throttle,
+          queue_size: 0
         });
-        var name_splice = this.topics[topic].name.split("/");
-        this.messages[name_splice[1]] = {};
 
-        var type_splice = this.topics[topic].type.split("/");
-        this.messages[name_splice[1]][type_splice[0]] = {};
-        this.messages[name_splice[1]][type_splice[0]][type_splice[1]] ={};
+        angular.merge(this.messages, this.MessageToDict(this.topics[topic].name, this.topics[topic].type));
       }
+      console.log(this.messages);
       var path = 'app/topics/';
 
       this.topic = $scope.topic;
@@ -722,11 +762,14 @@ function dashboardDirective() {
 
         t.subscribe(function(message) {
           $timeout(function () {
-            var name_splice = t.name.split("/");
+             var name_splice = t.name.split("/");
+             var accessor;
+             accessor = _this.messages[name_splice[1]];
+             if(name_splice.length > 2) {
+                accessor = accessor[name_splice[2]];
+              }
             var type_splice = t.messageType.split("/");
-            // get the incoming message for the given topic
-            _this.messages[name_splice[1]][type_splice[0]][type_splice[1]] = message;
-            console.log(message.header.stamp.secs * 1000 - (new Date() / 1000));
+            accessor[type_splice[0]][type_splice[1]]=message;
           }, 1000);
         });
       }
@@ -736,6 +779,20 @@ function dashboardDirective() {
 angular.module('roscc').directive('dashTopic', dashboardDirective);
 
 
+/**
+ * Controller to initialize the a LIDAR view
+ *
+ * This function will use the ROSLIB and ROS3DJS libraries to render a live point cloud on a page.
+ * It requires four different parts:
+ *  - ROS connection
+ *  - TF Client
+ *  - URDF model
+ *  - PointCloud
+ *
+ * The TF client is what makes everything come together.  It does all of the translations to make sure that the URDF model and the PointCloud are rendered in the same scene.
+ * We also use a SceneNode to have a little more control over the initialization.
+ * The default viewer object makes some assumptions that we did not want to abide by.
+ */
 function angularLidarViz(){
   return {
     controller: function controller($scope, $timeout, $http, Settings, Quaternions) {
@@ -766,9 +823,9 @@ function angularLidarViz(){
             num_cells: 100
           })
         );
-        console.log(viewer);
 
         // Setup a client to listen to TFs.
+        // Base_link will redner everything in relation to the base of the rover
         var tf_base = new ROSLIB.TFClient({
           ros : ros,
           angularThres : 0.01,
@@ -777,6 +834,8 @@ function angularLidarViz(){
           fixedFrame : '/base_link'
         });
 
+        // setup a TF client for the world
+        // this will render something with relation to the general WORLD that the rover is in
         var tf_cloud = new ROSLIB.TFClient({
           ros : ros,
           angularThres : 0.01,
@@ -785,27 +844,34 @@ function angularLidarViz(){
           fixedFrame : '/map'
         });
 
-
-
+        // we want our scene to be focused around the WORLD in which the rover is in
+        // for our purposes we want the tfClient and the frameId to reference the same topic
         var urdfScene = new ROS3D.SceneNode({
            tfClient : tf_cloud,
            frameID  : '/map',
         });
 
+        // add the scene to the viewer object
         viewer.scene.add(urdfScene);
 
 
+        // create a new pointcloud object
+        // our pointcloud is rendered via the /ass_cloud topic (short for /assembled_cloud)
+        // we use the tf_bae TF client in order to render the point cloud in relation to the rover
         var pointcloud = new ROS3D.PointCloud2({
           ros: ros,
           topic: "/ass_cloud",
           tfClient: tf_base,
           rootObject: urdfScene,
           size: 0.5,
-          max_pts: 75000
+          max_pts: 75000      //save up to 75000 points in the scene at any given time
         });
 
 
         // Setup the URDF client.
+        // we use the TF Base client here too in order to render the vehicles position relative to itself
+        // NOTE:  the URDF model is stored locally at /urdf
+        //        if the model ever updates, we need to update it here too
         var urdfClient = new ROS3D.UrdfClient({
           ros : ros,
           tfClient : tf_base,
@@ -813,7 +879,6 @@ function angularLidarViz(){
           rootObject : urdfScene,
           loader : ROS3D.COLLADA_LOADER_2
          });
-
       };
     }
   }

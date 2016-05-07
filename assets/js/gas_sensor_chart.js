@@ -118,16 +118,28 @@ var ctrl = angular.module('roscc').controller("gasChart", function ($scope, $tim
     function getMessageName(topic) {
         var name_splice = topic.name.split("/");
         var type_splice = topic.type.split("/");
-        return (name_splice[1] +"."+type_splice[0]+"."+type_splice[1]+".");
+        return (name_splice[1] +"."+name_splice[2]+"."+type_splice[0]+"."+type_splice[1]+".");
     };
 
     $scope.$watch(function($scope) {
-        // watch the message and update the chart whenever the value update
         var val;
-        $.each($scope.topicNames, function(e) {
-            var val = val + deref($scope, getMessageName($scope.topicNames[e]));
+        // for each of the sensor packs, there are certain sensors that are better than others for certain gases
+        // these are listed under *sensors*
+        // So we want to add and average these different sensor values for each sensor pack
+        $.each($scope.topicNames.topics, function(e) {
+            var sensor_pack = $scope.topicNames.topics[e];
+            var sensor_average = 0;
+            var count = 0;
+            // iterate over each sensor
+            $.each($scope.topicNames.sensors, function(s){
+                var sensor = $scope.topicNames.sensors[s]
+                sensor_average = sensor_average + deref($scope, getMessageName(sensor_pack)+"."+sensor);
+                count++;
+            });
+            sensor_average = sensor_average/count;
+            val += sensor_average;
         });
-        return val/$scope.topicNames.length;
+        return val/$scope.topicNames.topics.length;
     },function(val){
         if(val){
             $scope.gasChart.series[0].data[0] = Math.abs(val);
