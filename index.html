@@ -8,54 +8,73 @@
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/css/roscc.css">
 
-
   </head>
 
   <body>
-    <cc-navbar></cc-navbar>
+    <div style="min-height:100%">
+        <cc-navbar></cc-navbar>
 
-    <div ng-view></div>
+        <div ng-view></div>
 
-    <script src="node_modules/jquery/dist/jquery.min.js"></script>
-    <script src="/assets/js/highstock.js"></script>
-    <script src="/assets/js/highcharts-more.js"></script>
-    <script src="/assets/js/exporting.js"></script>
-    <script src="/assets/js/offline-exporting.js"></script>
+        <script src="node_modules/jquery/dist/jquery.min.js"></script>
+        <script src="/assets/js/highstock.js"></script>
+        <script src="/assets/js/highcharts-more.js"></script>
 
-    <script type="text/javascript" src="assets/js/underscore-min.js"></script>
-    <script type="text/javascript" src="assets/js/angular.min.js"></script>
-    <script type="text/javascript" src="assets/js/angular-route.min.js"></script>
-    <script type="text/javascript" src="assets/js/angular-local-storage.min.js"></script>
-    <script type="text/javascript" src="assets/js/ui-bootstrap-tpls.js"></script>
-    <script type="text/javascript" src="assets/js/eventemitter2.js"></script>
-    <script type="text/javascript" src="assets/js/roslib.js"></script>
-    <script type="text/javascript" src="node_modules/highcharts-ng/dist/highcharts-ng.min.js"></script>
+        <script src="/assets/js/exporting.js"></script>
+        <script src="/assets/js/offline-exporting.js"></script>
 
-
-    <script src="node_modules/ros3djs/src/threejs/three.js"></script>
-    <script src="assets/js/eventemitter2.min.js"></script>
-
-    <script src="node_modules/ros3djs/build/ros3d.js"></script>
-    <script src='node_modules/ros3djs/src/sensors/PointCloud2.js'></script>
-    <script src='node_modules/ros3djs/src/threejs/stlloader.js'></script>
-    <script src='node_modules/ros3djs/src/threejs/xhrloader.js'></script>
-    <script src='node_modules/ros3djs/src/threejs/cache.js'></script>
-    <script src="assets/js/ColladaLoader.js"></script>
-    <script src="assets/js/STLLoader.js"></script>
-    <script src="assets/js/ColladaLoader2.js"></script>
+        <script type="text/javascript" src="assets/js/underscore-min.js"></script>
+        <script type="text/javascript" src="assets/js/angular.min.js"></script>
+        <script type="text/javascript" src="assets/js/angular-route.min.js"></script>
+        <script type="text/javascript" src="assets/js/angular-local-storage.min.js"></script>
+        <script type="text/javascript" src="assets/js/ui-bootstrap-tpls.js"></script>
+        <script type="text/javascript" src="assets/js/eventemitter2.js"></script>
+        <script type="text/javascript" src="assets/js/roslib.js"></script>
+        <script type="text/javascript" src="node_modules/highcharts-ng/dist/highcharts-ng.min.js"></script>
 
 
-    <script type="text/javascript" src="assets/js/roscc.js"></script>
-    <script type='text/javascript' src="assets/js/lidar_init.js"></script>
+        <script src="node_modules/ros3djs/src/threejs/three.js"></script>
+        <script src="assets/js/eventemitter2.min.js"></script>
 
-    <!-- Chart JS files -->
-    <script type="text/javascript" src="assets/js/speed_chart.js"></script>
-    <script type="text/javascript" src="assets/js/wheel_angle_chart.js"></script>
-    <script type="text/javascript" src="assets/js/gas_sensor_chart.js"></script>
+        <script src="node_modules/ros3djs/build/ros3d.js"></script>
+        <script src='node_modules/ros3djs/src/sensors/PointCloud2.js'></script>
+        <script src='node_modules/ros3djs/src/threejs/stlloader.js'></script>
+        <script src='node_modules/ros3djs/src/threejs/xhrloader.js'></script>
+        <script src='node_modules/ros3djs/src/threejs/cache.js'></script>
+        <script src="assets/js/ColladaLoader.js"></script>
+        <script src="assets/js/STLLoader.js"></script>
+        <script src="assets/js/ColladaLoader2.js"></script>
 
+
+        <script type="text/javascript" src="assets/js/roscc.js"></script>
+        <script type='text/javascript' src="assets/js/lidar_init.js"></script>
+
+        <!-- Chart JS files -->
+        <script type="text/javascript" src="assets/js/speed_chart.js"></script>
+        <script type="text/javascript" src="assets/js/wheel_angle_chart.js"></script>
+        <script type="text/javascript" src="assets/js/gas_sensor_chart.js"></script>
+        <script src="/assets/js/solid-gauge.src.js"></script>
+
+    </div> <!-- end main content-->
+    <nav class="navbar navbar-default navbar-bottom" style="margin-bottom:0px;">
+    <div class="container">
+        <div class="col-lg-4">
+                <p class="text-muted">Designed using the <a href="https://github.com/gaug-cns/ros-control-center">ROS Control Center</a></p>
+                <p class="text-muted">Built on top of <a href="http://robotwebtools.org/">Robot Web Tools</a></p>
+        </div>
+        <div class="col-lg-4">
+            <div class="text-center">
+                <img src="assets/images/rsllogo2.jpg" class="media-object" style="max-width:65px; max-height:65px; display:block; margin:auto;">
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="text-right">
+                <p class="text-muted">Robotic Systems Lab</p>
+                <p class="text-muted">Santa Clara University</p>
+            </div>
+        </div>
+    </div>
+    </nav>
   </body>
-  <div class="footer">
-    Designed using the <a href="https://github.com/gaug-cns/ros-control-center">ROS Control Center</a>
-    <img src="assets/images/rsllogo2.png">Robotic Systems Lab
-  </div>
+ 
 </html>

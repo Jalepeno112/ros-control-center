@@ -288,9 +288,6 @@ var DomainsService = function () {
       var _this = this;
 
       var result = [];
-      console.log("GETTING DATA FOR DOMAIN");
-      console.time("getDataForDomain");
-      console.log("Domain: ", domainName, "; Array: ", array);
 
       angular.forEach(array, function (entry) {
         var nameArray = entry.name.split('/');
@@ -299,8 +296,6 @@ var DomainsService = function () {
           result.push(entry);
         }
       });
-      console.timeEnd("getDataForDomain");
-      console.log("DataForDomain: ", result);
       return result;
     }
   }]);
@@ -714,10 +709,10 @@ function dashboardDirective() {
       // we want to monitor them as a group and aggregate their values
       // but we only want to use certain sensors for certain gases
       this.gasTopics = {
-        c0:       {topics:[this.topics[0], this.topics[1], this.topics[2]], sensors:["M1", "M2", "M3"]},
-        c02:      {topics:[this.topics[0], this.topics[1], this.topics[2]], sensors:["M1", "M2", "M3"]},
-        propane:  {topics:[this.topics[0], this.topics[1], this.topics[2]], sensors:["M1", "M2", "M3"]},
-        methane:  {topics:[this.topics[0], this.topics[1], this.topics[2]], sensors:["M1", "M2", "M3"]}
+        C0:       {topics:[this.topics[0], this.topics[1], this.topics[2]], sensors:["MQ7", "MQ9"]},
+        C02:      {topics:[this.topics[0], this.topics[1], this.topics[2]], sensors:["MQ7", "MQ9"]},
+        Propane:  {topics:[this.topics[0], this.topics[1], this.topics[2]], sensors:["MQ2", "MQ5", "MQ6", "MQ9"]},
+        Methane:  {topics:[this.topics[0], this.topics[1], this.topics[2]], sensors:["MQ4"]}
       }
       this.roslibTopics = {}
       this.messages = {};
@@ -755,24 +750,52 @@ function dashboardDirective() {
         });
       });
 
-      for (topic in this.roslibTopics) {
+      this.roslibTopics['/EnvData/curly'].subscribe(function(message) {
+        $timeout(function() {
+          _this.messages['EnvData']['curly']['rsl_rover_msgs']['env_data'] = message;
+        }, 1000);
+      });
+
+      this.roslibTopics['/EnvData/moe'].subscribe(function(message) {
+        $timeout(function() {
+          _this.messages['EnvData']['moe']['rsl_rover_msgs']['env_data'] = message;
+        }, 1000);
+      });
+
+      this.roslibTopics['/EnvData/larry'].subscribe(function(message) {
+        $timeout(function() {
+          _this.messages['EnvData']['larry']['rsl_rover_msgs']['env_data'] = message;
+        }, 1000);
+      });
+
+      this.roslibTopics['/VehicleState'].subscribe(function(message) {
+        $timeout(function() {
+          _this.messages['VehicleState']['rsl_rover_msgs']['vehicle_state'] = message;
+        }, 1000);
+      });
+
+      /*for (topic in this.roslibTopics) {
         var t = this.roslibTopics[topic];
 
         console.log("Subscribing to ", t.name);
-
+        //subscribe to topic and store messages in appropriate place
         t.subscribe(function(message) {
           $timeout(function () {
              var name_splice = t.name.split("/");
              var accessor;
              accessor = _this.messages[name_splice[1]];
              if(name_splice.length > 2) {
+                console.log("CHECKING NAME SPLICE: ", name_splice[2]);
                 accessor = accessor[name_splice[2]];
               }
             var type_splice = t.messageType.split("/");
+            //console.log(name_splice, type_splice);
+            //console.log(message);
             accessor[type_splice[0]][type_splice[1]]=message;
+            console.log(accessor);
           }, 1000);
         });
-      }
+      }*/
     }
   };
 }
@@ -863,7 +886,7 @@ function angularLidarViz(){
           topic: "/ass_cloud",
           tfClient: tf_base,
           rootObject: urdfScene,
-          size: 0.5,
+          size: 0.7,
           max_pts: 75000      //save up to 75000 points in the scene at any given time
         });
 

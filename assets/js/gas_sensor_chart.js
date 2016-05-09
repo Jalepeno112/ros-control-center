@@ -5,19 +5,17 @@ var ctrl = angular.module('roscc').controller("gasChart", function ($scope, $tim
       $scope.gasChart = {
         options: {
             "chart": {
-                "type": "gauge",
-                "height":120,
-
+                "type": "solidgauge",
             },
             exporting: { 
-                enabled: false 
+                "enabled": false 
             },
             "pane": {
                 "center": [
                     "50%",
                     "85%"
                 ],
-                "size": "140%",
+                "size": "100%",
                 "startAngle": "-90",
                 "endAngle": "90",
                 "background": {
@@ -41,7 +39,7 @@ var ctrl = angular.module('roscc').controller("gasChart", function ($scope, $tim
                         "#DDDF0D"
                     ],
                     [
-                        0.9,
+                        0.75,
                         "#DF5353"
                     ]
                 ],
@@ -52,13 +50,20 @@ var ctrl = angular.module('roscc').controller("gasChart", function ($scope, $tim
                 "tickPixelInterval": 400,
                 "tickWidth": 0,
                 "title": {
-                    margin:0
+                    margin:0,
                 },
                 "labels": {
-                    "y": 16
-                }
+                    "y": 10
+                },
+                "showFirstLabel":false,
+                "showLastLabel":false,
             },
-            "plotOptions": {
+            "title":{
+                "text":"Gas",
+                "margin": 0
+            }
+        }, //end options
+        "plotOptions": {
                 "solidgauge": {
                     "dataLabels": {
                         "y": 10,
@@ -66,23 +71,19 @@ var ctrl = angular.module('roscc').controller("gasChart", function ($scope, $tim
                         "useHTML": true
                     }
                 }
+        },
+       'series': [{
+            'name': 'gas',
+            'data': [0],
+            "dataLabels": {
+                "format": '<div style="text-align:center"><span style="font-size:8px;color:' +
+                    ((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{y:.1f}</span><br/>'
             },
-            "series": [
-                {
-                    "dataLabels": {
-                        "format": "<div style=\"text-align:center\"><span style=\"font-size:25px;color:#000000\">{y}</span></div>"
-                    }
-                }
-            ],
-            "title":{
-                "text":"Gas",
-                "margin": 0
-            }
-        }, //end options
+        }],
         func: function(chart) {
             $timeout(function() {
                 chart.reflow();
-            }, 0);
+            }, 100);
         },    
         useHighStock: true
     };
@@ -118,11 +119,11 @@ var ctrl = angular.module('roscc').controller("gasChart", function ($scope, $tim
     function getMessageName(topic) {
         var name_splice = topic.name.split("/");
         var type_splice = topic.type.split("/");
-        return (name_splice[1] +"."+name_splice[2]+"."+type_splice[0]+"."+type_splice[1]+".");
+        return ("vm.messages."+name_splice[1] +"."+name_splice[2]+"."+type_splice[0]+"."+type_splice[1]+".");
     };
 
     $scope.$watch(function($scope) {
-        var val;
+        var val = 0;
         // for each of the sensor packs, there are certain sensors that are better than others for certain gases
         // these are listed under *sensors*
         // So we want to add and average these different sensor values for each sensor pack
@@ -131,15 +132,20 @@ var ctrl = angular.module('roscc').controller("gasChart", function ($scope, $tim
             var sensor_average = 0;
             var count = 0;
             // iterate over each sensor
+            //console.log($scope.topicNames.sensors);
             $.each($scope.topicNames.sensors, function(s){
-                var sensor = $scope.topicNames.sensors[s]
-                sensor_average = sensor_average + deref($scope, getMessageName(sensor_pack)+"."+sensor);
-                count++;
+                var sensor = $scope.topicNames.sensors[s];
+                var sensor_path = getMessageName(sensor_pack)+sensor+"."+$scope.gas_name;
+                var sensor_val = deref($scope, sensor_path);
+                if (sensor_val) {
+                    sensor_average += sensor_val;
+                    count++;
+                }
             });
             sensor_average = sensor_average/count;
             val += sensor_average;
         });
-        return val/$scope.topicNames.topics.length;
+        return (val/$scope.topicNames.topics.length);
     },function(val){
         if(val){
             $scope.gasChart.series[0].data[0] = Math.abs(val);
