@@ -1,0 +1,176 @@
+<robot name="rsl_roverzoe">
+<link name="base_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+          <mesh filename="package://rsl_rover/urdf/RoughBody_corrected.stl"/>
+      </geometry>
+
+    
+    </visual>
+ 
+    <collision><!-- Test values for now -->
+         <geometry>
+           <box size="300 200 200" />
+         </geometry>
+    </collision>
+  
+</link>
+
+<!-- Front Right Wheel -->
+<joint name="body_to_fr_tire" type="fixed" >
+	<parent link="base_link" />
+	<child link="fr_tire" />
+	<origin xyz="1.9431 -0.584 0" rpy="0 0 0" />
+	<axis xyz="0 1 0" />
+</joint>
+<link name="fr_tire">
+   <visual>
+	<geometry>
+	<mesh filename="package://rsl_rover/urdf/Tire_corrected.stl"/>
+	</geometry>
+     </visual>
+</link>
+
+<!-- Front Left Wheel -->
+<joint name="body_to_fl_tire" type="fixed" >
+	<parent link="base_link" />
+	<child link="fl_tire" />
+	<origin xyz="1.9431 0.584 0" rpy="0 0 0" />
+	<axis xyz="0 1 0" />
+</joint>
+<link name="fl_tire">
+   <visual>
+	<geometry>
+	<mesh filename="package://rsl_rover/urdf/Tire_corrected.stl"/>
+	</geometry>
+     </visual>
+</link>
+
+<!-- Center Right Wheel -->
+<joint name="body_to_cr_tire" type="fixed" >
+	<parent link="base_link" />
+	<child link="cr_tire" />
+	<origin xyz="0.3429 -0.584 0" rpy="0 0 0" />
+	<axis xyz="0 1 0" />
+</joint>
+<link name="cr_tire">
+   <visual>
+	<geometry>
+	<mesh filename="package://rsl_rover/urdf/Tire_corrected.stl"/>
+	</geometry>
+     </visual>
+</link>
+
+<!-- Center Left Wheel -->
+<joint name="body_to_cl_tire" type="fixed" >
+	<parent link="base_link" />
+	<child link="cl_tire" />
+	<origin xyz="0.3429 0.584 0" rpy="0 0 0" />
+	<axis xyz="0 1 0" />
+</joint>
+<link name="cl_tire">
+   <visual>
+	<geometry>
+	<mesh filename="package://rsl_rover/urdf/Tire_corrected.stl"/>
+	</geometry>
+     </visual>
+
+<!-- Back Right Wheel -->
+</link><joint name="body_to_br_tire" type="fixed" >
+	<parent link="base_link" />
+	<child link="br_tire" />
+	<origin xyz="-0.3429 -0.584 0" rpy="0 0 0" />
+	<axis xyz="0 1 0" />
+</joint>
+<link name="br_tire">
+   <visual>
+	<geometry>
+	<mesh filename="package://rsl_rover/urdf/Tire_corrected.stl"/>
+	</geometry>
+     </visual>
+</link>
+
+<!-- Back Left Wheel -->
+<joint name="body_to_bl_tire" type="fixed" >
+	<parent link="base_link" />
+	<child link="bl_tire" />
+	<origin xyz="-0.3429 0.584 0" rpy="0 0 0" />
+	<axis xyz="0 1 0" />
+</joint>
+<link name="bl_tire">
+   <visual>
+	<geometry>
+	<mesh filename="package://rsl_rover/urdf/Tire_corrected.stl"/>
+	</geometry>
+     </visual>
+</link>
+
+
+
+<!-- Front_Laser -->
+<joint name="body_to_front_laser" type="fixed" >
+	<parent link="base_link" />
+	<child link="front_laser" />
+	<origin xyz="2.4 0 0.24" rpy="3.1416 0 0" />
+	<axis xyz="0 1 0" />
+</joint>
+<link name="front_laser">
+   <visual>
+	<geometry>
+	<box size=".5 .5 .01" />
+	</geometry>
+     </visual>
+</link>
+
+
+<!-- Gimbal_Base -->
+<joint name="body_to_gimbal_base" type="fixed" >
+	<parent link="base_link" />
+	<child link="gimbal_base" />
+	<!--<origin xyz=".978 0 1.892" rpy="0 0 0" />-->
+	<origin xyz="1.1 0 1.892" rpy="0 0 0" />
+	<axis xyz="0 1 0" />
+</joint>
+<link name="gimbal_base">
+   <visual>
+	<geometry>
+	<box size=".5 .5 .01" />
+	</geometry>
+     </visual>
+</link>
+
+<!-- Imu Link -->
+<joint name="body_to_imu_link" type="fixed" >
+	<parent link="base_link" />
+	<child link="imu_link" />
+	<origin xyz="0 0 0.5" rpy="0 0 0" />
+	<axis xyz="0 1 0" />
+</joint>
+<link name="imu_link">
+   <visual>
+	<geometry>
+	<box size=".05 .05 .05" />
+	</geometry>
+     </visual>
+</link>
+
+<!-- Base Footprint Link (base link shifted down to under the wheels) -->
+<joint name="body_to_base_footprint" type="fixed" >
+	<parent link="base_link" />
+	<child link="base_footprint" />
+	<origin xyz="0 0 -0.3429" rpy="0 0 0" />
+	<axis xyz="0 0 0" />
+</joint>
+	<link name="base_footprint">
+</link>
+
+<joint name="body_to_front_camera" type="fixed" >
+	<parent link="base_link" />
+	<child link="front_camera" />
+	<origin xyz="1.0 0 1.0" rpy="3.14 0 0" />
+	<axis xyz="0 0 0" />
+</joint>
+	<link name="front_camera">
+</link>
+</robot>
