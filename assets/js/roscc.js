@@ -709,8 +709,8 @@ function dashboardDirective() {
       // we want to monitor them as a group and aggregate their values
       // but we only want to use certain sensors for certain gases
       this.gasTopics = {
-        C0:       {topics:[this.topics[0], this.topics[1], this.topics[2]], sensors:["MQ7", "MQ9"]},
-        C02:      {topics:[this.topics[0], this.topics[1], this.topics[2]], sensors:["MQ7", "MQ9"]},
+        CO:       {topics:[this.topics[0], this.topics[1], this.topics[2]], sensors:["MQ7", "MQ9"]},
+        CO2:      {topics:[this.topics[0], this.topics[1], this.topics[2]], sensors:["MQ7", "MQ9"]},
         Propane:  {topics:[this.topics[0], this.topics[1], this.topics[2]], sensors:["MQ2", "MQ5", "MQ6", "MQ9"]},
         Methane:  {topics:[this.topics[0], this.topics[1], this.topics[2]], sensors:["MQ4"]}
       }

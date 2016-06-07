@@ -141,6 +141,7 @@ var ctrl = angular.module('roscc').controller("gasChart", function ($scope, $tim
                     sensor_average += sensor_val;
                     count++;
                 }
+
             });
             sensor_average = sensor_average/count;
             val += sensor_average;
