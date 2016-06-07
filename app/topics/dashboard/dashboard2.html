@@ -1,0 +1,51 @@
+<div class="panel panel-default" ng-class="{'panel-success': vm.toggle}" id="dashboard_panel">
+    <div class="panel-heading clearfix">
+    </div>
+    <div class="panel-body">
+        <p>Timestamp: {{ vm.messages.VehicleState.rsl_rover_msgs.vehicle_state.header.stamp.secs * 1000 | date:'yyyy-MM-dd HH:mm:ss Z'}}</p>
+        <div class="container-fluid">
+            <div class="col-lg-2">
+                <div id="cameras">
+                    <img class="img-responsive img-thumbnail" ng-src="http://{{ vm.setting.raspberry_pi.address }}:{{ vm.setting.raspberry_pi.imagePreview.port }}/stream?topic={{ vm.setting.raspberry_pi.camera.front}}&quality={{ vm.setting.imagePreview.quality }}&width=180&height=135">
+                    <img class="img-responsive img-thumbnail" ng-src="http://{{ vm.setting.raspberry_pi.address }}:{{ vm.setting.raspberry_pi.imagePreview.port }}/stream?topic={{ vm.setting.raspberry_pi.camera.right}}&quality={{ vm.setting.imagePreview.quality }}&width=180&height=135">
+                    <img class="img-responsive img-thumbnail" ng-src="http://{{ vm.setting.raspberry_pi.address }}:{{ vm.setting.raspberry_pi.imagePreview.port }}/stream?topic={{ vm.setting.raspberry_pi.camera.left}}&quality={{ vm.setting.imagePreview.quality }}&width=180&height=135">
+                    <img class="img-responsive img-thumbnail" ng-src="http://{{ vm.setting.raspberry_pi.address }}:{{ vm.setting.raspberry_pi.imagePreview.port }}/stream?topic={{ vm.setting.raspberry_pi.camera.back}}&quality={{ vm.setting.imagePreview.quality }}&width=180&height=135">
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div lidar-viz id ="lidar_viz" style="height:500px; width:100%" ng-init="init(500, 'lidar_viz')">
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <!-- SPEDOMETER -->
+                <div ng-controller="speedChartController" ng-init="init('vm.messages.VehicleState.rsl_rover_msgs.vehicle_state.wheel_speed', 200);">
+                    <highchart id="speed_chart" config="speedChartConfig" class="chart"></highchart>
+                </div>
+                <div class="row">
+                  <div class="col-lg-6">
+                        <div ng-controller="gasChart">
+                            <highchart id="c02Chart" config="gasChart" class="chart" ng-init="init('CO2', 120, 'CO2')"></highchart>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div ng-controller="gasChart">
+                            <highchart id="c0Chart" config="gasChart" class="chart" ng-init="init('CO', 120, 'CO')"></highchart>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div ng-controller="gasChart">
+                            <highchart id="GasChart" config="gasChart" class="chart" ng-init="init('Methane', 120, 'CH4')"></highchart>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div ng-controller="gasChart">
+                            <highchart id="PropaneChart" config="gasChart" class="chart" ng-init="init('Propane', 120, 'C3H8')"></highchart>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
