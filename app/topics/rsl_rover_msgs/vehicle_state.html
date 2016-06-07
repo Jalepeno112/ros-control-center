@@ -1,0 +1,103 @@
+<div class="panel panel-default" ng-class="{'panel-success': vm.toggle}">
+    <div class="panel-heading clearfix">
+        <button id="vehicle_state_sub" class="btn btn-default btn-sm pull-right" ng-click="vm.toggleSubscription(!vm.toggle)" ng-model="vm.toggle" uib-btn-checkbox>{{ vm.toggle ? 'Unsubscribe' : 'Subscribe' }}</button>
+        <h3 class="panel-title">
+            {{ vm.topic.abbr }}
+            <small style="font-size: 12px;">({{ vm.topic.type }})</small>
+        </h3>
+    </div>
+    <div class="alert alert-danger" ng-show="vm.message.estop != null && vm.message.estop != false">
+        ESTOP Occured! Code: <strong>{{vm.message.estop_code}}</strong>
+    </div>
+
+    <div class="panel-body">
+        <div class ="row">
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <label>Timestamp</label>
+                    {{ vm.message.header.stamp.secs * 1000 | date:'yyyy-MM-dd HH:mm:ss Z'}}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <form class="form-horizontal form-margin">
+                    <div class="form-group">
+                        <div class="row">
+                            <div ng-controller="wheelAngleChart">
+                                <highchart id="actual_steering_chart" config="wheelAngleConfig" topicName="vm.message.actual_steering" class="chart"></highchart>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Actual Steering</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" ng-model="vm.message.actual_steering" ng-readonly="vm.isSubscribing">
+                                    <span class="input-group-addon">degrees</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label>Desired Steering</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" ng-model="vm.message.desired_steering" ng-readonly="vm.isSubscribing">
+                                    <span class="input-group-addon">degrees</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Wheel Pos</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" ng-model="vm.message.wheel_pos" ng-readonly="vm.isSubscribing">
+                            <span class="input-group-addon">m/s<sup>2</sup></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Desired Throttle</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" ng-model="vm.message.desired_throttle" ng-readonly="vm.isSubscribing">
+                            <span class="input-group-addon">m/s</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-sm-6">
+                <form class="form-horizontal form-margin">
+                    <div class="form-group">
+                        <div ng-controller="speedChartController" ng-init="topicName='vm.message.wheel_speed'">
+                            <highchart id="speed_chart" config="speedChartConfig" class="chart"></highchart>
+                        </div>
+                        <label>Wheel Speed</label>
+                        <div class="input-group">
+                            <input id='wheel_speed_val' type="number" class="form-control" ng-model="vm.message.wheel_speed" ng-readonly="vm.isSubscribing">
+                            <span class="input-group-addon">m/s</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Desired Gear</label>
+                                <div class="input-group">
+                                    <input type="string" class="form-control" ng-model="vm.message.desired_gear" ng-readonly="vm.isSubscribing">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label>Actual Gear</label>
+                                <div class="input-group">
+                                    <input type="string" class="form-control" ng-model="vm.message.actual_gear" ng-readonly="vm.isSubscribing">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Voltage Warn</label>
+                        <div class="input-group">
+                            <input type="bool" class="form-control" ng-class="{'bg-danger':vm.message.voltage_warn}" ng-model="vm.message.voltage_warn" ng-readonly="vm.isSubscribing">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

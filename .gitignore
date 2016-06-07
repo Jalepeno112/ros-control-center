@@ -16,3 +16,4 @@ app/services/**/
 !app/services/service.directive.js
 !app/services/std_srvs
 !app/topics/dashboard/
+!app/topics/rsl_rover_msgs/

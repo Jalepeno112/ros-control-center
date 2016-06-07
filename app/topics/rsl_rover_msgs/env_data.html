@@ -1,0 +1,24 @@
+<div class="panel panel-default" ng-class="{'panel-success': vm.toggle}">
+    <div class="panel-heading clearfix">
+        <button id="vehicle_state_sub" class="btn btn-default btn-sm pull-right" ng-click="vm.toggleSubscription(!vm.toggle)" ng-model="vm.toggle" uib-btn-checkbox>{{ vm.toggle ? 'Unsubscribe' : 'Subscribe' }}</button>
+        <h3 class="panel-title">
+            {{ vm.topic.abbr }}
+            <small style="font-size: 12px;">({{ vm.topic.type }})</small>
+        </h3>
+    </div>
+    <div class="alert alert-danger" ng-show="vm.message.estop != null && vm.message.estop != false">
+        ESTOP Occured! Code: <strong>{{vm.message.estop_code}}</strong>
+    </div>
+
+    <div class="panel-body">
+        <div class ="row">
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <label>Timestamp</label>
+                    {{ vm.message.header.stamp.secs * 1000 | date:'yyyy-MM-dd HH:mm:ss Z'}}
+                </div>
+            </div>
+        </div>
+        {{vm.message}}
+    </div>
+</div>
